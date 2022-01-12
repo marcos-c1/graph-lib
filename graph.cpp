@@ -2,7 +2,7 @@
 
 using namespace gstd;
 
-Node* Node::createNode(unsigned int v, unsigned int n, float w = NULL)
+Node* Node::createNode(unsigned int v, unsigned int n, float w = 0)
 {
     Node *node = (Node*) malloc(sizeof(Node)); 
     node->vertex = v; 
@@ -71,52 +71,52 @@ void Graph::findMinimumPath(int initial, int end)
     else {
         Graph::bfs(initial, path);
     }
-
-    for(vector<int>::iterator it = path.begin(); it != path.end(); it++){
+    /*for(auto it = path.begin(); it != path.end(); it++)
         cout << *it << endl;
-    }
+    */
 }
 
-void Graph::djikstra(int initial, int end, vector<int> & path)
+/* FIXME: has to fix the djikstra algorithm */
+void Graph::djikstra(int initial, int end, vector<int>& path)
 {
     float *distance = new float[Graph::n+1];
-    pair<int, bool> *unvisited = new pair<int, bool>[Graph::n+1];
     list<int>::iterator it;
+    list<int> queue;
 
-
-    distance[0] = 0;
+    distance[initial] = 0;
     
     for(int i = 1; i < Graph::n+1; i++){
-        distance[i] = numeric_limits<float>::infinity();
+        if(i != initial){
+            distance[i] = numeric_limits<float>::infinity();
+        }
     }
-
-    set<pair<float, int>> q;
-    q.insert({0, initial});
-
-    while(!q.empty())
+    queue.push_back(initial); 
+    while(!queue.empty())
     {
-        int v = q.begin()->second;
-        q.erase(q.begin());
+        int v = queue.front();
+        map<int, Node*>::iterator it = Graph::findNode(v);
 
-        map<int, Node*>::iterator it_node = Graph::findNode(v);
-
-        for(int i = 0; i < it_node->second->neigh_size; i++){
-            int to = it_node->second->neigh[i]->vertex;
-            int len = it_node->second->neigh[i]->weight;
-            if(distance[v] + len < distance[to])
-            {   
-                q.erase({distance[to], to});
-                distance[to] = distance[v] + len;
-                path[to] = v;
-                q.insert({distance[to], to});
+        queue.pop_front();
+        for(int i = 0; i < it->second->neigh_size; i++)
+        {
+            float distanceBtNodes = distance[v] + it->second->neigh[i]->weight;
+            if(distanceBtNodes < distance[it->second->neigh[i]->vertex])
+            {
+                distance[it->second->neigh[i]->vertex] = distanceBtNodes;
             }
         }
     }
+    for(int i = 0; i < Graph::n+1; i++)
+    {
+        cout << distance[i] << endl;
+    }
 }
 
-void Graph::bfs(int initial, vector<int> & path)
+void Graph::bfs(int initial, vector<int>& path)
 {
-    bool *visited = new bool[Graph::n];
+    bool *visited = new bool[Graph::n+1];
+    for(int i = 1; i < Graph::n+1; i++)
+        visited[i] = false;
     list<int> queue;
     list<int>::iterator it;
 
@@ -127,6 +127,7 @@ void Graph::bfs(int initial, vector<int> & path)
     {
         initial = queue.front();
         map<int, Node*>::iterator it_node = Graph::findNode(initial);
+
         path.push_back(initial);
         queue.pop_front();
 

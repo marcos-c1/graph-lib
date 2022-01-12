@@ -1,7 +1,7 @@
-run: main
-
-main: graph
-	cl main.cpp graph -o main
+run: graph
 
 graph:
-	cl graph.cpp -o graph
+	g++ graph.cpp main.cpp -o g && ./g
+
+rm:
+	rm *.o

@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef GRAPH_HPP
+#define GRAPH_HPP
 
 #include <iostream>
 #include <list>
@@ -7,7 +7,10 @@
 #include <vector>
 #include <string>
 #include <tuple>
+#include <limits>
 #include <set>
+#define ULL unsigned long long 
+#define LD long double
 
 using namespace std;
 
@@ -54,8 +57,8 @@ namespace gstd {
             
 
         private:
-            void djikstra(int initial, int end, vector<int> &path);
-            void bfs(int initial, vector<int> &path);
+            void djikstra(int initial, int end, vector<int>& path);
+            void bfs(int initial, vector<int>& path);
     };
 };
 #endif
