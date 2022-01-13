@@ -15,7 +15,7 @@
 using namespace std;
 
 namespace gstd
-{
+{    
     class Node
     {
     public:
@@ -32,18 +32,22 @@ namespace gstd
             this->neigh = (Node **)malloc(sizeof(Node) * n - 1);
         };
         Node();
-        ~Node();
+        ~Node()
+        {
+            for(int i = 0; i < neigh_size; i++)
+                free(neigh[i]);
+            delete[] neigh;
+        };
         static Node *createNode(unsigned int v, unsigned int n, float w);
     };
     class Graph
     {
     public:
-        map<int, Node *> vertexes;
-        unsigned int n;
+        size_t size;
         Graph();
-        Graph(unsigned int n)
+        explicit Graph(size_t size)
         {
-            this->n = n;
+            this->size = size;
         };
         ~Graph()
         {
@@ -54,28 +58,31 @@ namespace gstd
             vertexes.clear();
         };
     public:
-        void addEdge(Node *v1, Node *v2);
+        void virtual addEdge(Node *v1, Node *v2);
         void findMinimumPath(int initial);
-        bool hasWeight();
-        bool hasNode(map<int, Node *>::iterator it);
+        bool inline hasWeight();
+        void virtual print();
+    
+    protected:
+        map<int, Node *> vertexes;
 
     private:
         map<int, Node *>::iterator findNode(int v);
         void djikstra(int initial, vector<int> &path);
         void bfs(int initial, vector<int> &path);
         void dfs(int initial);
-        void print();
+        bool hasNode(map<int, Node *>::iterator it);
     };
-    class AdjList : private Graph
+    class AdjList : public Graph
     {
     public:
-        list<int> *adj_list;
-        size_t size;
+        list<Node*> *adj_list;
+        unsigned int arestas;
 
-        AdjList(unsigned int v)
+        AdjList(size_t size) : Graph(size)
         {
-            this->size = v + 1 || this->n + 1;
-            this->adj_list = new list<int>[this->size];
+            this->arestas = 0;
+            this->adj_list = new list<Node*>[this->size+1];
         }
         
         ~AdjList()
@@ -83,11 +90,44 @@ namespace gstd
             this->adj_list->clear();
             delete[] adj_list;
         }
+    public:
+        void virtual print();
+        void virtual degreeEachV();
+        void virtual addEdge(Node *v1, Node *v2, unsigned int *arestas);
+    };
+    class AdjMatrix : public Graph
+    {
+        public:
+            vector<bool> *matrix_adj;
+            AdjMatrix(size_t size) : Graph(size)
+            {
+                this->matrix_adj = new vector<bool>[this->size+1];
+                for(int i = 0; i < size+1; i++)
+                    	this->matrix_adj[i].resize(size+1, false);
+            };
 
-    private:
-        void print();
-        void degreeEachV();
-        inline void addEdge(int u, int v, int *arestas);
+        public:
+            void addEdge(int u, int v);
+            void print();
+    };
+    class Tree : public AdjList
+    {
+        public: 
+            list<Node*> *root;
+
+            Tree(size_t size) : AdjList(size)
+            {
+                this->root = new list<Node*>[this->size+1];
+            }
+            ~Tree()
+            {
+                this->root->clear();
+                delete[] root;
+            }
+        public:
+            void degreeEachV();
+            void addEdge(Node *v1, Node *v2);
+            void print();
     };
 };
 #endif

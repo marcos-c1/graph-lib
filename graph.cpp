@@ -56,7 +56,7 @@ bool Graph::hasWeight()
     return (it->second->weight > 0) ? flag : !flag;
 }
 
-bool Graph::hasNode(map<int, Node *>::iterator it)
+bool inline Graph::hasNode(map<int, Node *>::iterator it)
 {
     return (it != Graph::vertexes.end()) ? true : false;
 }
@@ -89,8 +89,8 @@ void Graph::findMinimumPath(int initial)
 void Graph::djikstra(int initial, vector<int> &path)
 {
     /* Get all the distances from initial vertex to the end */
-    float *distance = new float[Graph::n + 1];
-    bool *visited = new bool[Graph::n + 1];
+    float *distance = new float[Graph::size + 1];
+    bool *visited = new bool[Graph::size + 1];
 
     list<int>::iterator it;
     /* Set is used to get the least distance from neighbours vertices. */
@@ -103,7 +103,7 @@ void Graph::djikstra(int initial, vector<int> &path)
 
     distance[initial] = 0;
 
-    for (int i = 0; i < Graph::n + 1; i++)
+    for (int i = 0; i < Graph::size + 1; i++)
     {
         if (i != initial)
         {
@@ -139,8 +139,8 @@ void Graph::djikstra(int initial, vector<int> &path)
 
 void Graph::bfs(int initial, vector<int> &path)
 {
-    bool *visited = new bool[Graph::n + 1];
-    for (int i = 1; i < Graph::n + 1; i++)
+    bool *visited = new bool[Graph::size + 1];
+    for (int i = 1; i < Graph::size + 1; i++)
         visited[i] = false;
     list<int> queue;
 
@@ -169,7 +169,7 @@ void Graph::bfs(int initial, vector<int> &path)
 void Graph::dfs(int initial)
 {
     list<int> queue;
-    bool *visited = new bool[Graph::n + 1];
+    bool *visited = new bool[Graph::size + 1];
     queue.push_back(initial);
     while (!queue.empty())
     {
@@ -203,7 +203,7 @@ void Graph::print()
 
 void AdjList::degreeEachV()
 {
-    for (int i = 1; i <= size - 1; i++)
+    for (int i = 1; i < AdjList::size+1; i++)
     {
         cout << i << " " << adj_list[i].size() << endl;
     }
@@ -211,8 +211,8 @@ void AdjList::degreeEachV()
 
 void AdjList::print()
 {
-    list<int>::iterator it;
-    for (int i = 1; i <= size - 1; i++)
+    list<Node*>::iterator it;
+    for (int i = 1; i < AdjList::size + 1; i++)
     {
         cout << "E(" << i << ") -> ";
         for (it = adj_list[i].begin(); it != adj_list[i].end(); it++)
@@ -223,10 +223,39 @@ void AdjList::print()
     }
 }
 
-
-inline void AdjList::addEdge(int u, int v, int *arestas)
+void AdjList::addEdge(Node *v1, Node *v2, unsigned int *arestas)
 {
-    adj_list[u].push_back(v);
-    adj_list[v].push_back(u);
+    adj_list[v1->vertex].push_back(v2);
+    adj_list[v2->vertex].push_back(v1);
     (*arestas)++;
+}
+
+void AdjMatrix::print()
+{
+    for(int i = 1; i < AdjMatrix::size+1; i++){
+        for(int j = 1; j < AdjMatrix::size+1; j++)
+        {
+            cout << AdjMatrix::matrix_adj[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+void AdjMatrix::addEdge(int u, int v)
+{
+    AdjMatrix::matrix_adj[u][v] = 1; AdjMatrix::matrix_adj[v][u] = 1;
+}
+
+void Tree::addEdge(Node *v1, Node *v2)
+{
+    adj_list[v1->vertex].push_back(v2);
+    adj_list[v2->vertex].push_back(v1);
+}
+
+void Tree::print()
+{
+    for(int i = 0; i < Graph::size+1; i++)
+    {
+        
+    }
 }
