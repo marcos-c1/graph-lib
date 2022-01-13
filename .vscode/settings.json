@@ -1,5 +1,10 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "iostream": "cpp"
+=======
+        "iostream": "cpp",
+        "map": "cpp"
+>>>>>>> 721aabf68ceb84ff234167204839b496c3dae277
     }
 }
