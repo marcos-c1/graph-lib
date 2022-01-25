@@ -13,6 +13,17 @@ Node *Node::createNode(unsigned int v, unsigned int n, float w = 0)
     return node;
 }
 
+Node *Node::createNodeForLists(unsigned int v, unsigned int n, float w)
+{
+    Node *node = (Node *)malloc(sizeof(Node));
+    node->vertex = v;
+    node->weight = w;
+    node->neigh_size = -1;
+    node->neigh = NULL;
+
+    return node;
+}
+
 map<int, Node *>::iterator Graph::findNode(int v)
 {
     map<int, Node *>::iterator it;
@@ -61,7 +72,7 @@ bool inline Graph::hasNode(map<int, Node *>::iterator it)
     return (it != Graph::vertexes.end()) ? true : false;
 }
 
-void Graph::findMinimumPath(int initial)
+void Graph::findMinimumPath(ofstream &out, int initial, int end)
 {
     auto it_init = Graph::findNode(initial);
     auto it_end = Graph::findNode(initial);
@@ -70,71 +81,74 @@ void Graph::findMinimumPath(int initial)
 
     if (Graph::hasWeight())
     {
-        Graph::djikstra(initial, path);
+        assert(end < Graph::size + 1);
+        out << "Distância do menor caminho: " << Graph::djikstra(initial, path, end) << endl;
     }
     else
     {
         Graph::bfs(initial, path);
     }
-
     for (auto it = path.begin(); it != path.end(); it++)
     {
         if (it == path.end() - 1)
-            cout << *it << endl;
+            out << *it << endl;
         else
-            cout << *it << " -> ";
+            out << *it << " -> ";
     }
 }
 
-void Graph::djikstra(int initial, vector<int> &path)
+float Graph::djikstra(int initial, vector<int> &path, int end)
 {
-    /* Get all the distances from initial vertex to the end */
-    float *distance = new float[Graph::size + 1];
-    bool *visited = new bool[Graph::size + 1];
+    float dist[Graph::size + 1];
+    bool visitados[Graph::size + 1];
 
-    list<int>::iterator it;
-    /* Set is used to get the least distance from neighbours vertices. */
-    set<pair<float, int>> queue;
-    /*
-    -----------------------------------------------------------
-        Vertex | Shortest Distance from A | Previous vertex |
-        ...         ...                         ...
-    */
+    // fila de prioridades de pair (distancia, vértice)
+    priority_queue<pair<float, int>,
+                   vector<pair<float, int>>, greater<pair<int, int>>>
+        pq;
 
-    distance[initial] = 0;
-
-    for (int i = 0; i < Graph::size + 1; i++)
+    // inicia o vetor de distâncias e visitados
+    for (int i = 1; i < Graph::size + 1; i++)
     {
-        if (i != initial)
-        {
-            distance[i] = numeric_limits<float>::infinity();
-        }
-        visited[i] = false;
+        dist[i] = numeric_limits<float>::infinity();
+        visitados[i] = false;
     }
-    queue.insert({0, initial});
-    while (!queue.empty())
-    {
-        int v = queue.begin()->second;
-        map<int, Node *>::iterator it = Graph::findNode(v);
-        assert(Graph::hasNode(it));
-        path.push_back(v);
-        queue.clear();
-        visited[v] = true;
 
-        for (int i = 0; i < it->second->neigh_size; i++)
+    dist[initial] = 0;
+    pq.push(make_pair(dist[initial], initial));
+
+    while (!pq.empty() && !visitados[end])
+    {
+        pair<float, int> p = pq.top(); // extrai o pair do topo
+        int u = p.second;            // obtém o vértice do pair
+        pq.pop();                    // remove da fila
+        // verifica se o vértice não foi expandido
+        if (!visitados[u])
         {
-            if (!visited[it->second->neigh[i]->vertex])
+            visitados[u] = true;
+            path.push_back(u);
+            map<int, Node *>::iterator it_node = Graph::findNode(u);
+
+            // percorre os vértices "v" adjacentes de "u"
+            for (int i = 0; i < it_node->second->neigh_size; i++)
             {
-                assert(it->second->neigh[i]->weight > 0);
-                float distance_of_neigh = ((float)distance[v] + it->second->neigh[i]->weight);
-                if (distance_of_neigh < distance[it->second->neigh[i]->vertex])
+                // obtém o vértice adjacente e o custo da aresta
+                int v = it_node->second->neigh[i]->vertex;
+                int custo_aresta = it_node->second->neigh[i]->weight;
+
+                // relaxamento (u, v)
+                if (dist[v] > (dist[u] + custo_aresta))
                 {
-                    distance[it->second->neigh[i]->vertex] = distance_of_neigh;
-                    queue.insert({distance_of_neigh, it->second->neigh[i]->vertex});
+                    // atualiza a distância de "v" e insere na fila
+                    dist[v] = dist[u] + custo_aresta;
+                    pq.push(make_pair(dist[v], v));
                 }
             }
         }
     }
+
+    // retorna a distância mínima até o destino
+    return dist[end];
 }
 
 void Graph::bfs(int initial, vector<int> &path)
@@ -203,7 +217,7 @@ void Graph::print()
 
 void AdjList::degreeEachV()
 {
-    for (int i = 1; i < AdjList::size+1; i++)
+    for (int i = 1; i < AdjList::size + 1; i++)
     {
         cout << i << " " << adj_list[i].size() << endl;
     }
@@ -211,7 +225,7 @@ void AdjList::degreeEachV()
 
 void AdjList::print()
 {
-    list<Node*>::iterator it;
+    list<Node *>::iterator it;
     for (int i = 1; i < AdjList::size + 1; i++)
     {
         cout << "E(" << i << ") -> ";
@@ -232,8 +246,9 @@ void AdjList::addEdge(Node *v1, Node *v2, unsigned int *arestas)
 
 void AdjMatrix::print()
 {
-    for(int i = 1; i < AdjMatrix::size+1; i++){
-        for(int j = 1; j < AdjMatrix::size+1; j++)
+    for (int i = 1; i < AdjMatrix::size + 1; i++)
+    {
+        for (int j = 1; j < AdjMatrix::size + 1; j++)
         {
             cout << AdjMatrix::matrix_adj[i][j] << " ";
         }
@@ -241,21 +256,94 @@ void AdjMatrix::print()
     }
 }
 
-void AdjMatrix::addEdge(int u, int v)
+void AdjMatrix::addEdge(Node *v1, Node *v2)
 {
-    AdjMatrix::matrix_adj[u][v] = 1; AdjMatrix::matrix_adj[v][u] = 1;
+    AdjMatrix::matrix_adj[v1->vertex][v2->vertex] = 1;
+    AdjMatrix::matrix_adj[v2->vertex][v1->vertex] = 1;
 }
 
-void Tree::addEdge(Node *v1, Node *v2)
+void Tree::addEdge(Node *v1, Node *v2, unsigned int *arestas)
 {
-    adj_list[v1->vertex].push_back(v2);
-    adj_list[v2->vertex].push_back(v1);
+    Tree::adj_list[v1->vertex].push_back(v2);
+    Tree::adj_list[v2->vertex].push_back(v1);
+    (*arestas)++;
+}
+
+bool Tree::dfs(unsigned int vertex, set<int> &visited, int parent)
+{
+    visited.insert(vertex);
+    for (list<Node *>::iterator it = Tree::adj_list[vertex].begin(); it != Tree::adj_list[vertex].end(); it++)
+    {
+        if (vertex == parent) // if v is the parent not move that direction
+            continue;
+        if (visited.find(vertex) != visited.end()) // if v is already visited
+            return true;
+        if (dfs((*it)->vertex, visited, vertex))
+            return true;
+    }
+    return false;
+}
+
+bool Tree::hasCycle()
+{
+    set<int> visited;
+    list<Node *>::iterator it;
+    for (int i = 1; i < Tree::size + 1; i++)
+    {
+        if (visited.find(i) != visited.end())
+            continue;
+        if (Tree::dfs(i, visited, -1))
+            return true;
+    }
+    return false;
+}
+
+bool Tree::isConnected()
+{
+    vector<bool> visited(Graph::size + 1, false);
+
+    list<int> queue;
+    int initial = 1;
+
+    visited[initial] = true;
+    queue.push_back(initial);
+
+    list<Node *>::iterator it_node;
+
+    while (!queue.empty())
+    {
+        initial = queue.front();
+        assert(it_node != Tree::adj_list[initial].end());
+        queue.pop_front();
+
+        for (it_node = Tree::adj_list[initial].begin(); it_node != Tree::adj_list[initial].end(); it_node++)
+        {
+            if (!visited[(*it_node)->vertex])
+            {
+                visited[(*it_node)->vertex] = true;
+                queue.push_back((*it_node)->vertex);
+            }
+        }
+    }
+
+    for (int i = 1; i < Graph::size + 1; i++)
+    {
+        if (!visited[i])
+            return false;
+    }
+    return true;
 }
 
 void Tree::print()
 {
-    for(int i = 0; i < Graph::size+1; i++)
+    list<Node *>::iterator it;
+    for (int i = 1; i < Tree::size + 1; i++)
     {
-        
+        cout << "E(" << i << ") -> ";
+        for (it = adj_list[i].begin(); it != adj_list[i].end(); it++)
+        {
+            cout << (*it)->vertex << " ";
+        }
+        cout << endl;
     }
 }

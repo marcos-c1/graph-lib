@@ -2,11 +2,13 @@
 #define GRAPH_HPP
 
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <map>
 #include <vector>
 #include <limits>
 #include <set>
+#include <queue>
 #include <assert.h>
 
 #define ULL unsigned long long
@@ -15,13 +17,13 @@
 using namespace std;
 
 namespace gstd
-{    
+{
     class Node
     {
     public:
         unsigned int vertex;
         float weight;
-        size_t neigh_size;
+        int neigh_size;
         Node **neigh;
 
         Node(unsigned int v, float w, unsigned int n)
@@ -34,11 +36,12 @@ namespace gstd
         Node();
         ~Node()
         {
-            for(int i = 0; i < neigh_size; i++)
+            for (int i = 0; i < neigh_size; i++)
                 free(neigh[i]);
             delete[] neigh;
         };
         static Node *createNode(unsigned int v, unsigned int n, float w);
+        static Node *createNodeForLists(unsigned int v, unsigned int n, float w);
     };
     class Graph
     {
@@ -57,39 +60,41 @@ namespace gstd
             }
             vertexes.clear();
         };
+
     public:
         void virtual addEdge(Node *v1, Node *v2);
-        void findMinimumPath(int initial);
+        void findMinimumPath(ofstream &out, int initial, int end);
         bool inline hasWeight();
         void virtual print();
-    
+
     protected:
         map<int, Node *> vertexes;
 
     private:
         map<int, Node *>::iterator findNode(int v);
-        void djikstra(int initial, vector<int> &path);
-        void bfs(int initial, vector<int> &path);
-        void dfs(int initial);
+        float djikstra(int initial, vector<int> &path, int end);
+        void virtual bfs(int initial, vector<int> &path);
+        void virtual dfs(int initial);
         bool hasNode(map<int, Node *>::iterator it);
     };
     class AdjList : public Graph
     {
     public:
-        list<Node*> *adj_list;
+        list<Node *> *adj_list;
         unsigned int arestas;
 
         AdjList(size_t size) : Graph(size)
         {
             this->arestas = 0;
-            this->adj_list = new list<Node*>[this->size+1];
+            this->adj_list = new list<Node *>[this->size + 1];
         }
-        
+
         ~AdjList()
         {
             this->adj_list->clear();
             delete[] adj_list;
         }
+
     public:
         void virtual print();
         void virtual degreeEachV();
@@ -97,37 +102,43 @@ namespace gstd
     };
     class AdjMatrix : public Graph
     {
-        public:
-            vector<bool> *matrix_adj;
-            AdjMatrix(size_t size) : Graph(size)
-            {
-                this->matrix_adj = new vector<bool>[this->size+1];
-                for(int i = 0; i < size+1; i++)
-                    	this->matrix_adj[i].resize(size+1, false);
-            };
+    public:
+        vector<bool> *matrix_adj;
+        AdjMatrix(size_t size) : Graph(size)
+        {
+            this->matrix_adj = new vector<bool>[this->size + 1];
+            for (int i = 0; i < size + 1; i++)
+                this->matrix_adj[i].resize(size + 1, false);
+        };
 
-        public:
-            void addEdge(int u, int v);
-            void print();
+    public:
+        void addEdge(Node *v1, Node *v2);
+        void print();
     };
     class Tree : public AdjList
     {
-        public: 
-            list<Node*> *root;
+    public:
+        list<Node *> *adj_list;
+        unsigned int arestas;
 
-            Tree(size_t size) : AdjList(size)
-            {
-                this->root = new list<Node*>[this->size+1];
-            }
-            ~Tree()
-            {
-                this->root->clear();
-                delete[] root;
-            }
-        public:
-            void degreeEachV();
-            void addEdge(Node *v1, Node *v2);
-            void print();
+        Tree(size_t size) : AdjList(size){
+            this->adj_list = new list<Node*>[size+1];
+            this->arestas = 0; 
+        };
+        ~Tree()
+        {
+            this->adj_list->clear();
+            delete[] adj_list;
+        };
+
+    public:
+        bool hasCycle();
+        bool isConnected();
+        void addEdge(Node *v1, Node *v2, unsigned int *arestas);
+        void print();
+
+    private:
+        bool dfs(unsigned int vertex, set<int> &visited, int parent);
     };
 };
 #endif
