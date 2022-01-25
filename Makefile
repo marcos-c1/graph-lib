@@ -4,4 +4,4 @@ graph:
 	g++ graph.cpp utils.cpp main.cpp -o g && ./g
 
 rm:
-	rm *.o
+	rm g
