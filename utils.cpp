@@ -1,4 +1,10 @@
 #include "utils.hpp"
+#include <iostream>
+#include <iomanip>
+#include "sys/times.h"
+#include <sys/stat.h>
+
+struct stat st = {0};
 
 string chooseTestCase(ifstream &in)
 {
@@ -13,25 +19,31 @@ string chooseTestCase(ifstream &in)
     
     TEST_CASE_FILENAME(filename, opt);
     
-    switch(opt)
+    if(opt < 1 || opt > 5)
     {
-        case 1:  in.open(filename, in.in); break;
-        case 2: in.open(filename, in.in); break;
-        case 3: in.open(filename, in.in); break;
-        case 4: in.open(filename, in.in); break;
-        case 5: in.open(filename, in.in); break;
-        default: DEBUG("Estudo de caso inválido."); break;
-    } 
+        DEBUG("Estudo de caso inválido.");
+        exit(-1);
+    }
+
+    in.open(filename, in.in);
+
     if (!in)
     {
         DEBUG("Não pode abrir o arquivo!\n");
     }
+
     string outputFilename = "results/";
+
+
+    if(stat("results/", &st) == -1){
+        mkdir("results/", 0700);
+    }
+    
     time_t t = time(0);   // get time now
     tm* now = localtime(&t);
-    outputFilename.append(filename.substr(10, 22) + "__");
-    outputFilename.append(to_string(now->tm_mday) + to_string(now->tm_mon) +  to_string(now->tm_year) + to_string(now->tm_hour) + to_string(now->tm_min));
-    outputFilename.append(".txt");
+    outputFilename.append(filename.substr(10, 22) + to_string(now->tm_mon) +  to_string(now->tm_year) + to_string(now->tm_hour) + to_string(now->tm_min));
+    outputFilename.append(".txt__");
+    outputFilename.append(to_string(now->tm_mday));
     return outputFilename;
 }
 

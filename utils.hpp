@@ -1,14 +1,11 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <iostream>
-#include <iomanip>
+
 #include <tuple>
 #include <string>
-#include "string.h"
 #include <fstream>
-#include "sys/times.h"
-#include "sys/vtimes.h"
+#include <string.h>
 
 #define DEBUG(EXCEPTION)                                                \
     fprintf(stderr, "%s:%d: ERROR: %s", __FILE__, __LINE__, EXCEPTION); \

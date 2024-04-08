@@ -3,27 +3,10 @@
 
 using namespace gstd;
 
-void init()
-{
-    PC_INFO pc; time_t start, end;
-    time(&start);
-    ifstream in;
-    string outputFilename = chooseTestCase(in);
-    ofstream out(outputFilename);
-
-    if(!out)
-    {
-        DEBUG("Arquivo de output não criado.");
-    }
-    
-    unsigned int v1, v2, n, method;
-    string line;
+void check(unsigned int method, unsigned int n, ifstream &in, string line, ofstream &out){
+    unsigned int v1, v2;
     float w;
-    getline(in, line);
-    n = stoi(line);
 
-    method = chooseMethods();
-    
     if (method == GRAPH)
     {
         Graph g(n);
@@ -75,6 +58,30 @@ void init()
             t.print();
         }
     }
+}
+
+void init()
+{
+    PC_INFO pc; time_t start, end;
+    time(&start);
+    ifstream in;
+    string outputFilename = chooseTestCase(in);
+    ofstream out(outputFilename);
+
+    if(!out)
+    {
+        DEBUG("Arquivo de output não criado.");
+    }
+    
+    unsigned int n, method;
+    string line;
+    getline(in, line);
+    n = stoi(line);
+
+    method = chooseMethods();
+    
+    check(method, n, in, line, out);
+    
     in.close();
 
     time(&end);
@@ -82,6 +89,7 @@ void init()
     pc.show(out, time_taken);
     out.close();
 }
+
 int main()
 {
     init();
