@@ -12,7 +12,7 @@
     exit(1)
 
 #define TEST_CASE_FILENAME(FILENAME, FILE_INDEX) \
-    FILENAME = "testCases/trab2grafo_"; \
+    FILENAME = "tests/"; \
     FILENAME.append(to_string(FILE_INDEX)); \
     FILENAME.append(".txt"); \
 

@@ -10,11 +10,11 @@ string chooseTestCase(ifstream &in)
 {
     int opt; string filename;
     cout << "\t Estudo de Caso\n\n";
-    cout << "1- trab2grafo_1.txt" << endl;
-    cout << "2- trab2grafo_2.txt" << endl;
-    cout << "3- trab2grafo_3.txt" << endl;
-    cout << "4- trab2grafo_4.txt" << endl;
-    cout << "5- trab2grafo_5.txt\n\n> ";
+    cout << "1- 1.txt" << endl;
+    cout << "2- 2.txt" << endl;
+    cout << "3- 3.txt" << endl;
+    cout << "4- 4.txt" << endl;
+    cout << "5- 5.txt\n\n> ";
     cin >> opt;
     
     TEST_CASE_FILENAME(filename, opt);
